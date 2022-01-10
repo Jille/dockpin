@@ -17,9 +17,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - run: go install github.com/Jille/dockpin@latest
 
-      - run: dockpin docker pin
+      - run: go run . docker pin
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v3
