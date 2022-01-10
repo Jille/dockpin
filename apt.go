@@ -106,6 +106,11 @@ func runAptInstall(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to parse pin file: %v", err)
 	}
 
+	if len(pkgs) == 0 {
+		fmt.Fprintf(os.Stderr, "No packages in the lock file, nothing to be done\n")
+		return nil
+	}
+
 	var files []string
 	for _, p := range pkgs {
 		f, err := fetchPackage(p)
