@@ -11,7 +11,7 @@ $ (echo postgresql-12; echo curl) > dockpin-apt.pkgs
 $ dockpin apt pin
 ```
 
-then you can change your `apt-get update && apt-get install -y postgresql-12 curl && apt-get clean && rm -rf /var/lib/apt/lists/*` to:
+then you can change your `apt-get update && apt-get install -y postgresql-12 curl && apt-get clean && rm -rf /var/lib/apt/lists/*` in your Dockerfile to:
 
 ```
 FROM ghcr.io/jille/dockpin AS dockpin
@@ -46,16 +46,10 @@ $ dockpin docker pin -f - < Dockerfile.template > Dockerfile
 
 ## Apt pinning
 
-You should create a file called dockpin-apt.pkgs which contains one Debian/Ubuntu package per line. After that you can run:
-
-```shell
-$ dockpin apt pin
-```
-
-which generates dockpin-apt.lock, which contains the URLs and size/hash of each .deb file to use.
+You should create a file called dockpin-apt.pkgs which contains one Debian/Ubuntu package per line. After that you can run `dockpin apt pin` which generates dockpin-apt.lock, which contains the URLs and size/hash of each .deb file to use.
 
 When you run `dockpin apt install` in your Dockerfile, it will read (only) dockpin-apt.lock and install all the listed packages at the pinned versions.
 
-The easiest way to get the `dockpin` binary in your Docker build is by grabbing it from the ghcr.io/jille/dockpin image.
+The easiest way to get the `dockpin` binary in your Docker build is by grabbing it from the ghcr.io/jille/dockpin image (as shown in the example at the top of this README).
 
 Note that the Debian/Ubuntu archives will eventually delete the old package you pinned from their mirrors. At that point you'll get an error when you try to build (rather than a silent upgrade). You can reproduce your build by somehow finding the old .deb file and changing the lock file to point at whichever URL you put it at. You can also COPY it into /var/cache/apt/archives/ and `dockpin apt install` will use that without downloading.
