@@ -1,4 +1,4 @@
-name: Docker
+name: dockpin docker pin
 
 on:
   schedule:
