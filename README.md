@@ -1,5 +1,7 @@
 # Dockpin
 
+Install dockpin with: `go install github.com/Jille/dockpin@latest`
+
 Dockpin helps you achieve repeatable builds. It pins base images in your Dockerfile, and packages you install with apt-get.
 
 `dockpin docker pin -f Dockerfile` rewrites your Dockerfile to use the latest digest for each image. Docker will then use exactly that image until you upgrade it.
