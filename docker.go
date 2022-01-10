@@ -75,6 +75,9 @@ func getUsedBaseImages(dockerfile []byte) []string {
 		if m == nil {
 			continue
 		}
+		if string(m[2]) == "scratch" {
+			continue
+		}
 		ret = append(ret, string(m[2]))
 	}
 	return ret
@@ -85,6 +88,9 @@ func getLastBaseImage(dockerfile []byte) string {
 	for _, l := range bytes.Split(dockerfile, []byte{'\n'}) {
 		m := fromRe.FindSubmatch(l)
 		if m != nil {
+			if string(m[2]) == "scratch" {
+				continue
+			}
 			last = string(m[2]) + string(m[3])
 		}
 	}
