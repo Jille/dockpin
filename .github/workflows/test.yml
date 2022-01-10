@@ -1,0 +1,26 @@
+name: Test cases
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - run: CGO_ENABLED=0 go build -v
+      - run: "echo wget > dockpin-apt.pkgs"
+      - name: Create Dockerfile
+        run: |
+          echo "FROM ubuntu:focal" >> test.Dockerfile
+          echo "COPY dockpin /usr/local/sbin/dockpin" >> test.Dockerfile
+          echo "COPY dockpin-apt.lock /tmp" >> test.Dockerfile
+          echo "RUN /usr/local/sbin/dockpin apt install -p /tmp/dockpin-apt.lock" >> test.Dockerfile
+      - run: ./dockpin docker pin
+      - run: cat test.Dockerfile
+      - run: ./dockpin apt pin
+      - run: cat dockpin-apt.lock
+      - run: docker build -f test.Dockerfile .
