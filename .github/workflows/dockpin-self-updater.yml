@@ -1,0 +1,29 @@
+name: Docker
+
+on:
+  schedule:
+     - cron: '42 6 * * Sat'
+
+jobs:
+  update-Dockerfile:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - run: go install github.com/Jille/dockpin@latest
+
+      - run: dockpin docker pin
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v3
+        commit-message: Bump the digest of the Dockerfile
+        title: Update Dockerfile pins to latest version of tags
+        body: I ran dockpin docker pin to update the digests to the latest version.
+        branch: automatic-dockpin-docker-pin
+        delete-branch: true
