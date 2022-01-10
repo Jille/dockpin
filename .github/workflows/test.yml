@@ -21,6 +21,6 @@ jobs:
           echo "RUN /usr/local/sbin/dockpin apt install -p /tmp/dockpin-apt.lock" >> test.Dockerfile
       - run: ./dockpin docker pin -f test.Dockerfile
       - run: cat test.Dockerfile
-      - run: ./dockpin apt pin
+      - run: ./dockpin apt pin -f test.Dockerfile
       - run: cat dockpin-apt.lock
       - run: docker build -f test.Dockerfile .
