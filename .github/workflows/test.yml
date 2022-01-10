@@ -19,7 +19,7 @@ jobs:
           echo "COPY dockpin /usr/local/sbin/dockpin" >> test.Dockerfile
           echo "COPY dockpin-apt.lock /tmp" >> test.Dockerfile
           echo "RUN /usr/local/sbin/dockpin apt install -p /tmp/dockpin-apt.lock" >> test.Dockerfile
-      - run: ./dockpin docker pin
+      - run: ./dockpin docker pin -f test.Dockerfile
       - run: cat test.Dockerfile
       - run: ./dockpin apt pin
       - run: cat dockpin-apt.lock
