@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -44,6 +45,7 @@ var (
 
 	aptPinFile          *string
 	aptRequirementsFile *string
+	baseImage           *string
 )
 
 func init() {
@@ -51,8 +53,7 @@ func init() {
 	aptCmd.MarkPersistentFlagFilename("pin-file", "lock")
 	aptRequirementsFile = aptPinCmd.Flags().StringP("selection-file", "s", "dockpin-apt.pkgs", "File with packages to be installed")
 	aptPinCmd.MarkPersistentFlagFilename("selection-file", "pkgs")
-
-	// TODO: Read ubuntu image from Dockerfile (or flag)
+	baseImage = aptPinCmd.Flags().String("base-image", "", "Docker image you're going to use dockpin in, so we can figure out your additional dependencies.")
 }
 
 func runAptPin(cmd *cobra.Command, args []string) error {
@@ -60,6 +61,19 @@ func runAptPin(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to read selection file %q: %v", *aptRequirementsFile, err)
 	}
+
+	if *baseImage == "" {
+		b, err := ioutil.ReadFile(ifDash(*dockerfile, "/dev/stdin"))
+		if err != nil {
+			return fmt.Errorf("failed to read %q (needed to determine your base image): %v", *dockerfile, err)
+		}
+		*baseImage = getLastBaseImage(b)
+		if *baseImage == "" {
+			return errors.New("no images found in your Dockerfile")
+		}
+		fmt.Fprintf(os.Stderr, "Based on your Dockerfile, it looks like you'll use dockpin in an image based on %s. Pass --base-image if that's incorrect.\n", *baseImage)
+	}
+
 	// Let me know if you know a nice way that doesn't depend on composing a shell script.
 	shcmd := "apt-get update >&2 && echo Determining dependencies... >&2 && apt-get install --print-uris -qq --no-install-recommends"
 	for _, p := range strings.Split(string(b), "\n") {
@@ -67,9 +81,9 @@ func runAptPin(cmd *cobra.Command, args []string) error {
 	}
 	var buf bytes.Buffer
 	buf.WriteString("# dockpin apt lock file v1\n")
-	buf.WriteString("base-image=ubuntu:focal\n")
+	buf.WriteString("base-image=" + *baseImage + "\n")
 	buf.WriteString("\n")
-	c := exec.Command("docker", "run", "--rm", "ubuntu:focal", "bash", "-c", shcmd)
+	c := exec.Command("docker", "run", "--rm", *baseImage, "bash", "-c", shcmd)
 	c.Stdout = &buf
 	c.Stderr = os.Stderr
 	if err := c.Run(); err != nil {

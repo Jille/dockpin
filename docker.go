@@ -30,8 +30,8 @@ var (
 )
 
 func init() {
-	dockerfile = rootCmd.Flags().StringP("dockerfile", "f", "Dockerfile", "Path to your Dockerfile (or - for stdin)")
-	rootCmd.MarkFlagFilename("dockerfile")
+	dockerfile = rootCmd.PersistentFlags().StringP("dockerfile", "f", "Dockerfile", "Path to your Dockerfile (or - for stdin)")
+	rootCmd.MarkPersistentFlagFilename("dockerfile")
 }
 
 func runDockerPin(cmd *cobra.Command, args []string) error {
@@ -78,6 +78,17 @@ func getUsedBaseImages(dockerfile []byte) []string {
 		ret = append(ret, string(m[2]))
 	}
 	return ret
+}
+
+func getLastBaseImage(dockerfile []byte) string {
+	var last string
+	for _, l := range bytes.Split(dockerfile, []byte{'\n'}) {
+		m := fromRe.FindSubmatch(l)
+		if m != nil {
+			last = string(m[2]) + string(m[3])
+		}
+	}
+	return last
 }
 
 func rewriteDockerfileWithDigests(dockerfile []byte, images map[string]string) []byte {
