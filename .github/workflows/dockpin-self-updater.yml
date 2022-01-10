@@ -3,6 +3,7 @@ name: dockpin docker pin
 on:
   schedule:
      - cron: '42 6 * * Sat'
+  workflow_dispatch:
 
 jobs:
   update-Dockerfile:
