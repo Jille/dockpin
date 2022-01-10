@@ -23,8 +23,9 @@ jobs:
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v3
-        commit-message: Bump the digest of the Dockerfile
-        title: Update Dockerfile pins to latest version of tags
-        body: I ran dockpin docker pin to update the digests to the latest version.
-        branch: automatic-dockpin-docker-pin
-        delete-branch: true
+        with:
+          commit-message: Bump the digest of the Dockerfile
+          title: Update Dockerfile pins to latest version of tags
+          body: I ran dockpin docker pin to update the digests to the latest version.
+          branch: automatic-dockpin-docker-pin
+          delete-branch: true
