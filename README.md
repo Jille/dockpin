@@ -55,3 +55,5 @@ When you run `dockpin apt install` in your Dockerfile, it will read (only) dockp
 The easiest way to get the `dockpin` binary in your Docker build is by grabbing it from the ghcr.io/jille/dockpin image (as shown in the example at the top of this README).
 
 Note that the Debian/Ubuntu archives will eventually delete the old package you pinned from their mirrors. At that point you'll get an error when you try to build (rather than a silent upgrade). You can reproduce your build by somehow finding the old .deb file and changing the lock file to point at whichever URL you put it at. You can also COPY it into /var/cache/apt/archives/ and `dockpin apt install` will use that without downloading.
+
+We rely on apt(8) to figure out which dependencies you already have / need to install. However, that does mean that we need to do the pinning on the same base image as you'll run `dockpin apt install`. We try to guess this automatically by parsing your Dockerfile, but that might fail and you'll need to pass `--base-image=ubuntu:focal` (or whatever image you use).
