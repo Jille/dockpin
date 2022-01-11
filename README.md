@@ -26,7 +26,7 @@ RUN /usr/local/sbin/dockpin apt install -p /tmp/dockpin-apt.lock
 
 ## Why repeatable builds?
 
-If you do a small cherrypick, to fix a bug, and you're going to roll that out to prod with an accellerated push, you don't want to accidentally also pick up a new Python version.
+If you do a small cherrypick, to fix a bug, and you're going to roll that out to prod with an accelerated push, you don't want to accidentally also pick up a new Python version.
 
 Increasingly more people do pin versions, but never upgrade and stay on that version forever. That makes security folks shudder.
 
