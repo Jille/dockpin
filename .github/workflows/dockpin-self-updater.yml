@@ -1,4 +1,4 @@
-name: dockpin docker pin
+name: Self updater
 
 on:
   schedule:

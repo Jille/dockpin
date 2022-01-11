@@ -1,12 +1,10 @@
-name: Docker
+name: Release Docker image
 
 on:
   push:
     branches: [ master ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
-  pull_request:
-    branches: [ master ]
 
 env:
   REGISTRY: ghcr.io
@@ -21,9 +19,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      # This is used to complete the identity challenge
-      # with sigstore/fulcio when running outside of PRs.
-      id-token: write
 
     steps:
       - name: Checkout repository
