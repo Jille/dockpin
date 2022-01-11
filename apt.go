@@ -138,7 +138,12 @@ func fetchPackage(p AptPackage) (string, error) {
 		return "", err
 	}
 	fmt.Fprintf(os.Stderr, "Downloading %s... (%s)\n", p.URL, humanize.IBytes(uint64(p.Size)))
-	resp, err := http.Get(p.URL)
+	req, err := http.NewRequest("GET", p.URL, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to download %q: %v", p.URL, err)
+	}
+	req.Header.Set("User-Agent", "Dockpin "+rootCmd.Version+" (https://github.com/Jille/dockpin)")
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to download %q: %v", p.URL, err)
 	}

@@ -9,8 +9,9 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "dockpin {docker|apt} {pin|install}",
-		Short: "A tool for pinning Docker image and apt package versions",
+		Use:     "dockpin {docker|apt} {pin|install}",
+		Short:   "A tool for pinning Docker image and apt package versions",
+		Version: "dev", // AUTOMATION-ANCHOR: This line will be automatically replaced during releases.
 	}
 )
 
