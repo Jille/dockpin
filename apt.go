@@ -75,7 +75,7 @@ func runAptPin(cmd *cobra.Command, args []string) error {
 	}
 
 	// Let me know if you know a nice way that doesn't depend on composing a shell script.
-	shcmd := "apt-get update >&2 && echo Determining dependencies... >&2 && apt-get install --print-uris -qq --no-install-recommends"
+	shcmd := "apt-get update >&2 && echo Determining dependencies... >&2 && apt-get install --print-uris -qq --no-install-recommends --"
 	for _, p := range strings.Split(string(b), "\n") {
 		shcmd += " " + shellescape.Quote(p)
 	}
