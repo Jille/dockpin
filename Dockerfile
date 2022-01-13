@@ -14,4 +14,4 @@ FROM scratch
 
 COPY --from=builder /dockpin /bin/dockpin
 
-CMD ["/bin/dockpin"]
+ENTRYPOINT ["/bin/dockpin"]
