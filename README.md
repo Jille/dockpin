@@ -1,5 +1,7 @@
 # Dockpin
 
+<img align="right" src="logo.png" />
+
 Install dockpin with: `go install github.com/Jille/dockpin@latest`
 
 Dockpin helps you achieve repeatable builds. It pins base images in your Dockerfile, and packages you install with apt-get.
