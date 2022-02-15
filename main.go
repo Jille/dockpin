@@ -21,6 +21,7 @@ func main() {
 	dockerCmd.AddCommand(dockerPinCmd)
 	rootCmd.AddCommand(aptCmd)
 	rootCmd.AddCommand(dockerCmd)
+	rootCmd.AddCommand(dockerBaseCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

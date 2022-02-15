@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strings"
 
 	docker "github.com/docker/docker/client"
 	"github.com/spf13/cobra"
@@ -24,6 +25,15 @@ var (
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		RunE:         runDockerPin,
+	}
+
+	dockerBaseCmd = &cobra.Command{
+		Use:          "docker-base base-image",
+		Example:      "docker-base ubuntu:20.04",
+		Short:        "Prints the current digest of the given base image",
+		Args:         cobra.ExactArgs(1),
+		SilenceUsage: false,
+		RunE:         runDockerBasePin,
 	}
 
 	dockerfile *string
@@ -55,6 +65,21 @@ func runDockerPin(cmd *cobra.Command, args []string) error {
 	}
 	n := rewriteDockerfileWithDigests(b, pinned)
 	return ioutil.WriteFile(ifDash(*dockerfile, "/dev/stdout"), n, 0644)
+}
+
+func runDockerBasePin(cmd *cobra.Command, args []string) error {
+	baseImageAndVersion := args[0]
+	baseImage := strings.Split(baseImageAndVersion, ":")[0]
+	dockerClient, err := docker.NewClientWithOpts(docker.FromEnv)
+	if err != nil {
+		return err
+	}
+	di, diErr := dockerClient.DistributionInspect(cmd.Context(), baseImageAndVersion, "")
+	if diErr != nil {
+		return diErr
+	}
+	hashedBase := baseImage + "@" + string(di.Descriptor.Digest) + "\n"
+	return ioutil.WriteFile("/dev/stdout", []byte(hashedBase), 0644)
 }
 
 func ifDash(fn string, repl string) string {
