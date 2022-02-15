@@ -26,6 +26,15 @@ var (
 		RunE:         runDockerPin,
 	}
 
+	dockerResolveCmd = &cobra.Command{
+		Use:          "resolve [base-image]",
+		Example:      "resolve ubuntu:20.04",
+		Short:        "Prints the current digest of the given base image",
+		Args:         cobra.ExactArgs(1),
+		SilenceUsage: true,
+		RunE:         runDockerResolve,
+	}
+
 	dockerfile *string
 )
 
@@ -55,6 +64,21 @@ func runDockerPin(cmd *cobra.Command, args []string) error {
 	}
 	n := rewriteDockerfileWithDigests(b, pinned)
 	return ioutil.WriteFile(ifDash(*dockerfile, "/dev/stdout"), n, 0644)
+}
+
+func runDockerResolve(cmd *cobra.Command, args []string) error {
+	baseImageAndVersion := args[0]
+	dockerClient, err := docker.NewClientWithOpts(docker.FromEnv)
+	if err != nil {
+		return err
+	}
+	di, err := dockerClient.DistributionInspect(cmd.Context(), baseImageAndVersion, "")
+	if err != nil {
+		return err
+	}
+	hashedBase := baseImageAndVersion + "@" + string(di.Descriptor.Digest)
+	_, err = fmt.Println(hashedBase)
+	return err
 }
 
 func ifDash(fn string, repl string) string {
