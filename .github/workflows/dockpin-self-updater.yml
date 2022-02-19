@@ -2,7 +2,7 @@ name: Self updater
 
 on:
   schedule:
-     - cron: '42 6 * * Sat'
+     - cron: '42 6 15 */2 *'
   workflow_dispatch:
 
 jobs:
