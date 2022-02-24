@@ -32,7 +32,7 @@ var (
 		Short:        "Prints the current digest of the given base image",
 		Args:         cobra.ExactArgs(1),
 		SilenceUsage: true,
-		RunE:         runDockerBasePin,
+		RunE:         runDockerResolve,
 	}
 
 	dockerfile *string
@@ -66,7 +66,7 @@ func runDockerPin(cmd *cobra.Command, args []string) error {
 	return ioutil.WriteFile(ifDash(*dockerfile, "/dev/stdout"), n, 0644)
 }
 
-func runDockerBasePin(cmd *cobra.Command, args []string) error {
+func runDockerResolve(cmd *cobra.Command, args []string) error {
 	baseImageAndVersion := args[0]
 	dockerClient, err := docker.NewClientWithOpts(docker.FromEnv)
 	if err != nil {
