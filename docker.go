@@ -76,8 +76,9 @@ func runDockerResolve(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	hashedBase := baseImageAndVersion + "@" + string(di.Descriptor.Digest) + "\n"
-	return ioutil.WriteFile("/dev/stdout", []byte(hashedBase), 0644)
+	hashedBase := baseImageAndVersion + "@" + string(di.Descriptor.Digest)
+	_, err = fmt.Println(hashedBase)
+	return err
 }
 
 func ifDash(fn string, repl string) string {
