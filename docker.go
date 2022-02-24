@@ -28,8 +28,8 @@ var (
 	}
 
 	dockerBaseCmd = &cobra.Command{
-		Use:          "docker-base base-image",
-		Example:      "docker-base ubuntu:20.04",
+		Use:          "resolve [base image]",
+		Example:      "resolve ubuntu:20.04",
 		Short:        "Prints the current digest of the given base image",
 		Args:         cobra.ExactArgs(1),
 		SilenceUsage: false,
