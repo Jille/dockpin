@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
-	"strings"
 
 	docker "github.com/docker/docker/client"
 	"github.com/spf13/cobra"
@@ -27,12 +26,12 @@ var (
 		RunE:         runDockerPin,
 	}
 
-	dockerBaseCmd = &cobra.Command{
-		Use:          "resolve [base image]",
+	dockerResolveCmd = &cobra.Command{
+		Use:          "resolve [base-image]",
 		Example:      "resolve ubuntu:20.04",
 		Short:        "Prints the current digest of the given base image",
 		Args:         cobra.ExactArgs(1),
-		SilenceUsage: false,
+		SilenceUsage: true,
 		RunE:         runDockerBasePin,
 	}
 
@@ -69,16 +68,15 @@ func runDockerPin(cmd *cobra.Command, args []string) error {
 
 func runDockerBasePin(cmd *cobra.Command, args []string) error {
 	baseImageAndVersion := args[0]
-	baseImage := strings.Split(baseImageAndVersion, ":")[0]
 	dockerClient, err := docker.NewClientWithOpts(docker.FromEnv)
 	if err != nil {
 		return err
 	}
-	di, diErr := dockerClient.DistributionInspect(cmd.Context(), baseImageAndVersion, "")
-	if diErr != nil {
-		return diErr
+	di, err := dockerClient.DistributionInspect(cmd.Context(), baseImageAndVersion, "")
+	if err != nil {
+		return err
 	}
-	hashedBase := baseImage + "@" + string(di.Descriptor.Digest) + "\n"
+	hashedBase := baseImageAndVersion + "@" + string(di.Descriptor.Digest) + "\n"
 	return ioutil.WriteFile("/dev/stdout", []byte(hashedBase), 0644)
 }
 
