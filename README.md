@@ -36,6 +36,8 @@ Dockpin aims to make it easy to move to new versions *when you want*.
 
 ## Docker pinning
 
+### Dockerfiles
+
 This is pretty easy. You can either make dockpin rewrite your Dockerfile in place:
 
 ```shell
@@ -46,6 +48,15 @@ or control output yourself:
 
 ```shell
 $ dockpin docker pin -f - < Dockerfile.template > Dockerfile
+```
+
+### Docker base images elsewhere
+
+To support pinning Docker base images elsewhere than Dockerfiles, you can use the `dockpin docker resolve` command. For example:
+
+```
+$ dockpin docker resolve ubuntu:20.04
+ubuntu:20.04@sha256:669e010b58baf5beb2836b253c1fd5768333f0d1dbcb834f7c07a4dc93f474be
 ```
 
 ## Apt pinning
