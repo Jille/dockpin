@@ -2,11 +2,14 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"regexp"
 
+	"github.com/docker/docker/api/types"
 	docker "github.com/docker/docker/client"
 	"github.com/spf13/cobra"
 )
@@ -36,11 +39,28 @@ var (
 	}
 
 	dockerfile *string
+	username   *string
+	password   *string
 )
 
 func init() {
 	dockerfile = rootCmd.PersistentFlags().StringP("dockerfile", "f", "Dockerfile", "Path to your Dockerfile (or - for stdin)")
 	rootCmd.MarkPersistentFlagFilename("dockerfile")
+	username = rootCmd.PersistentFlags().StringP("username", "u", "", "Username to authenticate with to the Docker registry")
+	password = rootCmd.PersistentFlags().StringP("password", "p", "", "Password to authenticate with to the Docker registry")
+}
+
+func authStringForCommand(cmd *cobra.Command) string {
+	if *username != "" { // permit empty password but not username
+		authConfig := types.AuthConfig{
+			Username: *username,
+			Password: *password,
+		}
+
+		encodedJSON, _ := json.Marshal(authConfig)
+		return base64.URLEncoding.EncodeToString(encodedJSON)
+	}
+	return ""
 }
 
 func runDockerPin(cmd *cobra.Command, args []string) error {
@@ -54,9 +74,10 @@ func runDockerPin(cmd *cobra.Command, args []string) error {
 	}
 	pinned := map[string]string{}
 	images := getUsedBaseImages(b)
+	authStr := authStringForCommand(cmd)
 	for _, i := range images {
 		fmt.Fprintf(os.Stderr, "Resolving digest of %s...\n", i)
-		di, err := c.DistributionInspect(cmd.Context(), i, "")
+		di, err := c.DistributionInspect(cmd.Context(), i, authStr)
 		if err != nil {
 			return err
 		}
@@ -72,7 +93,9 @@ func runDockerResolve(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	di, err := dockerClient.DistributionInspect(cmd.Context(), baseImageAndVersion, "")
+
+	authStr := authStringForCommand(cmd)
+	di, err := dockerClient.DistributionInspect(cmd.Context(), baseImageAndVersion, authStr)
 	if err != nil {
 		return err
 	}
