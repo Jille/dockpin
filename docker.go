@@ -46,8 +46,8 @@ var (
 func init() {
 	dockerfile = rootCmd.PersistentFlags().StringP("dockerfile", "f", "Dockerfile", "Path to your Dockerfile (or - for stdin)")
 	rootCmd.MarkPersistentFlagFilename("dockerfile")
-	username = rootCmd.PersistentFlags().StringP("username", "u", "", "Username to authenticate with to the Docker registry")
-	password = rootCmd.PersistentFlags().StringP("password", "p", "", "Password to authenticate with to the Docker registry")
+	username = dockerCmd.PersistentFlags().StringP("username", "u", "", "Username to authenticate with to the Docker registry")
+	password = dockerCmd.PersistentFlags().StringP("password", "p", "", "Password to authenticate with to the Docker registry")
 }
 
 func authStringForCommand(cmd *cobra.Command) string {
