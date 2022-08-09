@@ -6,10 +6,16 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strings"
 
 	docker "github.com/docker/docker/client"
 	"github.com/spf13/cobra"
 )
+
+type DockerBaseReference struct {
+	BaseName     string
+	Sha256SumTag string
+}
 
 var (
 	dockerCmd = &cobra.Command{
@@ -35,6 +41,15 @@ var (
 		RunE:         runDockerResolve,
 	}
 
+	dockerCheckCmd = &cobra.Command{
+		Use:          "check [-f Dockerfile]",
+		Example:      "check [-f -] < Dockerfile",
+		Short:        "Check if any base image in a Dockerfile is not the latest tagged image",
+		Args:         cobra.NoArgs,
+		SilenceUsage: true,
+		RunE:         runDockerCheck,
+	}
+
 	dockerfile *string
 )
 
@@ -55,12 +70,12 @@ func runDockerPin(cmd *cobra.Command, args []string) error {
 	pinned := map[string]string{}
 	images := getUsedBaseImages(b)
 	for _, i := range images {
-		fmt.Fprintf(os.Stderr, "Resolving digest of %s...\n", i)
-		di, err := c.DistributionInspect(cmd.Context(), i, "")
+		fmt.Fprintf(os.Stderr, "Resolving digest of %s...\n", i.BaseName)
+		di, err := c.DistributionInspect(cmd.Context(), i.BaseName, "")
 		if err != nil {
 			return err
 		}
-		pinned[i] = string(di.Descriptor.Digest)
+		pinned[i.BaseName] = string(di.Descriptor.Digest)
 	}
 	n := rewriteDockerfileWithDigests(b, pinned)
 	return ioutil.WriteFile(ifDash(*dockerfile, "/dev/stdout"), n, 0644)
@@ -81,6 +96,36 @@ func runDockerResolve(cmd *cobra.Command, args []string) error {
 	return err
 }
 
+func runDockerCheck(cmd *cobra.Command, args []string) error {
+	b, err := ioutil.ReadFile(ifDash(*dockerfile, "/dev/stdin"))
+	if err != nil {
+		return fmt.Errorf("failed to read %q: %v", *dockerfile, err)
+	}
+	c, err := docker.NewClientWithOpts(docker.FromEnv)
+	if err != nil {
+		return err
+	}
+	pinned := map[string]string{}
+	images := getUsedBaseImages(b)
+	allUpToDate := true
+	for _, i := range images {
+		fmt.Fprintf(os.Stderr, "Resolving digest of %s...\n", i.BaseName)
+		di, err := c.DistributionInspect(cmd.Context(), i.BaseName, "")
+		if err != nil {
+			return err
+		}
+		if len(i.Sha256SumTag) == 0 || i.Sha256SumTag != string(di.Descriptor.Digest) {
+			fmt.Fprintf(os.Stderr, "%v is not at its latest!\n", i.BaseName)
+			allUpToDate = false
+		}
+		pinned[i.BaseName] = string(di.Descriptor.Digest)
+	}
+	if allUpToDate == false {
+		return fmt.Errorf("Some image(s) are not tagged at latest")
+	}
+	return nil
+}
+
 func ifDash(fn string, repl string) string {
 	if fn == "-" {
 		return repl
@@ -92,8 +137,8 @@ var (
 	fromRe = regexp.MustCompile(`^(FROM\s+(?:--\S+\s+)*([^@ ]+))(@\S+)?(.*)$`)
 )
 
-func getUsedBaseImages(dockerfile []byte) []string {
-	var ret []string
+func getUsedBaseImages(dockerfile []byte) []DockerBaseReference {
+	var ret []DockerBaseReference
 	for _, l := range bytes.Split(dockerfile, []byte{'\n'}) {
 		m := fromRe.FindSubmatch(l)
 		if m == nil {
@@ -102,7 +147,12 @@ func getUsedBaseImages(dockerfile []byte) []string {
 		if string(m[2]) == "scratch" {
 			continue
 		}
-		ret = append(ret, string(m[2]))
+		var base DockerBaseReference
+		base.BaseName = string(m[2])
+		if len(m) > 2 {
+			base.Sha256SumTag = strings.Replace(string(m[3]), "@", "", 1)
+		}
+		ret = append(ret, base)
 	}
 	return ret
 }

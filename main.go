@@ -20,6 +20,7 @@ func main() {
 	aptCmd.AddCommand(aptInstallCmd)
 	dockerCmd.AddCommand(dockerPinCmd)
 	dockerCmd.AddCommand(dockerResolveCmd)
+	dockerCmd.AddCommand(dockerCheckCmd)
 	rootCmd.AddCommand(aptCmd)
 	rootCmd.AddCommand(dockerCmd)
 	if err := rootCmd.Execute(); err != nil {
